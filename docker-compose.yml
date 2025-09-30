@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: votes
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  python-vote:
+    build: ./python-vote
+    env_file: ./python-vote/.env
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - "8080:8080"
+
+  dotnet-worker:
+    build: ./dotnet-worker
+    env_file: ./dotnet-worker/.env
+    depends_on:
+      - redis
+      - postgres
+
+  node-results:
+    build: ./node-results
+    env_file: ./node-results/.env
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
