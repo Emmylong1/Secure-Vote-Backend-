@@ -1,0 +1,32 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: evote
+    ports: ["5432:5432"]
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/0-init.sql:ro
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+
+  python-vote:
+    build: ./python-vote
+    env_file: ./python-vote/.env
+    depends_on: [redis, postgres]
+    ports: ["8080:8080"]
+
+  dotnet-worker:
+    build: ./dotnet-worker
+    env_file: ./dotnet-worker/.env
+    depends_on: [redis, postgres]
+
+  node-results:
+    build: ./node-results
+    env_file: ./node-results/.env
+    depends_on: [postgres]
+    ports: ["8090:8090"]
